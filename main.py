@@ -1,28 +1,48 @@
-from fastapi import FastAPI
-import uvicorn
-import yaml
-from logging import getLogger
-logger = getLogger(__name__)
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-@app.get("/", tags=["root"])
-def read_root():
-    return {"message": "Welcome!"}
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # 本番環境では制限
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-@app.get("/health", tags=["health"])
-def health():
+
+@app.get("/health")  # AWSのELBでヘルスチェックに使う
+async def health_check():
     return {"status": "ok"}
 
-if __name__ == "__main__":
-    with open('config.yaml', 'r') as yml:
-        config = yaml.safe_load(yml)
-    
-    PORT = config['PORT']
-    
-    if(PORT):
-        uvicorn.run(app, port=PORT)
-    else:
-        logger.warning("PORT not found in environment variables.")
-        logger.warning("Starting server on default port 8000")
-        uvicorn.run(app, port=8000)
+
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: list[WebSocket] = []
+
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self.active_connections.append(websocket)
+
+    def disconnect(self, websocket: WebSocket):
+        self.active_connections.remove(websocket)
+
+    async def send_message(self, message: str):
+        for connection in self.active_connections:
+            await connection.send_text(message)
+
+
+manager = ConnectionManager()
+
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await manager.connect(websocket)
+    try:
+        while True:
+            data = await websocket.receive_text()
+            await manager.send_message(f"Message received: {data}")
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
+        await manager.send_message("Client disconnected")
