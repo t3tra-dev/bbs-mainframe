@@ -1,0 +1,5 @@
+PORT : 3000
+
+# salt will be used to hash the seed and ip, so it should be unique for each project
+SALT1 : 
+SALT2 :
