@@ -5,8 +5,8 @@ from Crypto.Cipher import PKCS1_OAEP
 import base64
 
 RSA_KEY = RSA.generate(2048)
-PRIVATE_KEY = RSA_KEY.export_key()
-PUBLIC_KEY = RSA_KEY.publickey().export_key()
+PRIVATE_KEY = RSA_KEY.export_key(format="PEM",pkcs=8)
+PUBLIC_KEY = RSA_KEY.publickey().export_key(format="PEM",pkcs=8)
 KEY_HEADER = "-----BEGIN PUBLIC KEY-----"
 KEY_FOOTER = "-----END PUBLIC KEY-----"
 
