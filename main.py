@@ -7,6 +7,8 @@ import base64
 RSA_KEY = RSA.generate(2048)
 PRIVATE_KEY = RSA_KEY.export_key()
 PUBLIC_KEY = RSA_KEY.publickey().export_key()
+KEY_HEADER = "-----BEGIN PUBLIC KEY-----"
+KEY_FOOTER = "-----END PUBLIC KEY-----"
 
 app = FastAPI()
 
@@ -25,7 +27,7 @@ async def health_check():
 
 @app.get("/public_key")
 async def get_public_key():
-    return {"public_key": PUBLIC_KEY}
+    return {"public_key": PUBLIC_KEY.decode().replace("\n", "").replace(KEY_HEADER, "").replace(KEY_FOOTER, "")}
 
 class ConnectionManager:
     def __init__(self):
