@@ -1,5 +1,5 @@
-import hashlib
 import base64
+import hashlib
 
 def generate_id(seed,ip,salt1,salt2):
     seedid = generate_seedid(seed,salt1,salt2)

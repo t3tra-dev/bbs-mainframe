@@ -1,8 +1,9 @@
+import base64
+
+from Crypto.Cipher import PKCS1_OAEP
+from Crypto.PublicKey import RSA
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from Crypto.PublicKey import RSA
-from Crypto.Cipher import PKCS1_OAEP
-import base64
 
 RSA_KEY = RSA.generate(2048)
 PRIVATE_KEY = RSA_KEY.export_key(format="PEM",pkcs=8)
