@@ -1,5 +1,15 @@
+import base64
+
+from Crypto.Cipher import PKCS1_OAEP
+from Crypto.PublicKey import RSA
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+
+RSA_KEY = RSA.generate(2048)
+PRIVATE_KEY = RSA_KEY.export_key(format="PEM",pkcs=8)
+PUBLIC_KEY = RSA_KEY.publickey().export_key(format="PEM",pkcs=8)
+KEY_HEADER = "-----BEGIN PUBLIC KEY-----"
+KEY_FOOTER = "-----END PUBLIC KEY-----"
 
 app = FastAPI()
 
@@ -16,6 +26,9 @@ app.add_middleware(
 async def health_check():
     return {"status": "ok"}
 
+@app.get("/public_key")
+async def get_public_key():
+    return {"public_key": PUBLIC_KEY.decode().replace("\n", "").replace(KEY_HEADER, "").replace(KEY_FOOTER, "")}
 
 class ConnectionManager:
     def __init__(self):
